@@ -1,5 +1,5 @@
 //
-//  TodoTaskRow.swift
+//  TaskRow.swift
 //  pagebook
 //
 //  Created by Максим Гоглов on 21.07.2025.
@@ -8,9 +8,9 @@
 
 import SwiftUI
 
-struct TodoTaskRow: View {
-    let task: TodoTask
-    let toggleCompletion: (TodoTask) -> Void
+struct TaskRow: View {
+    let task: TaskItem
+    let toggleCompletion: (TaskItem) -> Void
     
     var body: some View {
         HStack {
@@ -19,15 +19,17 @@ struct TodoTaskRow: View {
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(task.priority.color)
+                    .contentTransition(.symbolEffect)
             }
             .buttonStyle(.plain)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
                     .strikethrough(task.isCompleted)
+                    .foregroundColor(task.isCompleted ? .secondary : .primary)
                 
                 if let dueDate = task.dueDate {
-                    Text(formatDate(dueDate))
+                    Text(dueDate, style: .date)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -39,12 +41,7 @@ struct TodoTaskRow: View {
                 .font(.caption)
                 .foregroundColor(task.priority.color)
         }
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Двойное нажатие для отметки выполнения")
     }
 }

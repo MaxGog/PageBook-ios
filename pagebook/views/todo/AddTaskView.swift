@@ -5,70 +5,64 @@
 //  Created by Максим Гоглов on 21.07.2025.
 //
 
-
 import SwiftUI
 
 struct AddTaskView: View {
     @Binding var isPresented: Bool
     @Binding var title: String
     @Binding var dueDate: Date
-    @Binding var priority: TodoTask.Priority
+    @Binding var priority: TaskItem.Priority
     let onAdd: () -> Void
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                VStack {
-                    Text("Новая задача")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .padding(.top, 20)
-                    
-                    Divider()
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Название задачи", text: $title)
+                        .font(.headline)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            if !title.isEmpty {
+                                onAdd()
+                            }
+                        }
+                } header: {
+                    Text("Основная информация")
                 }
                 
-                Form {
-                    Section {
-                        TextField("Название задачи", text: $title)
-                            .font(.headline)
-                            .submitLabel(.done)
-                    }
-                    
-                    Section(header: Text("Приоритет").font(.headline)) {
-                        PriorityPicker(selection: $priority)
-                            .padding(.vertical, 8)
-                    }
-                    
-                    Section(header: Text("Срок выполнения").font(.headline)) {
-                        DatePicker("Выберите дату",
-                                   selection: $dueDate,
-                                   in: Date()...,
-                                   displayedComponents: .date)
-                            .datePickerStyle(.graphical)
-                            .padding(.vertical, 4)
-                    }
+                Section {
+                    PriorityPicker(selection: $priority)
+                        .padding(.vertical, 8)
+                } header: {
+                    Text("Приоритет")
+                }
+                
+                Section {
+                    DatePicker("Срок выполнения",
+                             selection: $dueDate,
+                             in: Date()...,
+                             displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .padding(.vertical, 4)
+                } header: {
+                    Text("Срок выполнения")
                 }
             }
+            .navigationTitle("Новая задача")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") {
+                    Button("Отмена", role: .cancel) {
                         isPresented = false
                     }
-                    .foregroundColor(.red)
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: onAdd) {
-                        Text("Добавить")
-                            .bold()
-                    }
-                    .disabled(title.isEmpty)
-                    .foregroundColor(title.isEmpty ? .gray : .blue)
+                    Button("Добавить", action: onAdd)
+                        .disabled(title.isEmpty)
+                        .fontWeight(.semibold)
                 }
             }
         }
-        #if os(macOS)
-        .frame(width: 450, height: 600)
-        #endif
+        .interactiveDismissDisabled(!title.isEmpty)
     }
 }

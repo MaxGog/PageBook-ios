@@ -5,29 +5,31 @@
 //  Created by Максим Гоглов on 21.07.2025.
 //
 
-
 import SwiftUI
 
 struct PriorityPicker: View {
-    @Binding var selection: TodoTask.Priority
+    @Binding var selection: TaskItem.Priority
     
     var body: some View {
-        HStack(spacing: 12) {
-            ForEach(TodoTask.Priority.allCases, id: \.self) { priority in
+        HStack(spacing: 16) {
+            ForEach(TaskItem.Priority.allCases, id: \.self) { priority in
                 PriorityOption(priority: priority, isSelected: priority == selection)
                     .onTapGesture {
-                        withAnimation(.spring()) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                             selection = priority
                         }
                     }
+                    .accessibilityAddTraits(priority == selection ? .isSelected : [])
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Приоритет задачи")
     }
 }
 
 struct PriorityOption: View {
-    let priority: TodoTask.Priority
+    let priority: TaskItem.Priority
     let isSelected: Bool
     
     var body: some View {
@@ -50,5 +52,6 @@ struct PriorityOption: View {
                 .foregroundColor(isSelected ? priority.color : .primary)
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
 }

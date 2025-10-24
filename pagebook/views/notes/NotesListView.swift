@@ -7,42 +7,29 @@
 import SwiftUI
 
 struct NotesListView: View {
-    @Binding var notes: [Note]
-    @Binding var showingNewNote: Bool
-    @Binding var newNote: Note
+    let notes: [Note]
     let onDelete: (IndexSet) -> Void
-    let onSave: () -> Void
     
     var body: some View {
         List {
-            ForEach($notes) { $note in
+            ForEach(notes) { note in
                 NavigationLink {
-                    NoteDetailView(
-                        note: $note,
-                        onSave: onSave
-                    )
+                    NoteDetailView(note: note)
                 } label: {
                     NoteRowView(note: note)
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        if let index = notes.firstIndex(where: { $0.id == note.id }) {
+                            onDelete(IndexSet(integer: index))
+                        }
+                    } label: {
+                        Label("Удалить", systemImage: "trash")
+                    }
+                }
             }
-            .onDelete(perform: onDelete)
         }
-        .navigationTitle("Мои заметки")
-        .toolbar {
-            ToolbarItem {
-                AddNoteButton(
-                    showingNewNote: $showingNewNote,
-                    newNote: $newNote
-                )
-            }
-        }
-        .sheet(isPresented: $showingNewNote) {
-            NoteCreationView(
-                showingNewNote: $showingNewNote,
-                newNote: $newNote,
-                notes: $notes,
-                onSave: onSave
-            )
-        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 }

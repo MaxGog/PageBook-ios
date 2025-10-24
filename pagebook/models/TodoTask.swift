@@ -7,7 +7,7 @@
 import Foundation
 import SwiftUI
 
-struct TodoTask: Identifiable, Codable {
+struct TaskItem: Identifiable, Codable {
     let id: UUID
     var title: String
     var isCompleted: Bool

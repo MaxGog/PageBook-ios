@@ -13,42 +13,101 @@ struct AddEventView: View {
     @Binding var date: Date
     @Binding var duration: Double
     let onAdd: () -> Void
-    let onCancel: () -> Void
+    
+    @FocusState private var focusedField: Field?
+    
+    private enum Field {
+        case title, description
+    }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
-                TextField("Название события", text: $title)
+                Section {
+                    TextField("Название события", text: $title)
+                        .focused($focusedField, equals: .title)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .description
+                        }
+                } header: {
+                    Text("Основная информация")
+                }
                 
-                DatePicker("Дата и время", selection: $date)
+                Section {
+                    DatePicker("Дата и время",
+                             selection: $date,
+                             in: Date()...)
+                        .datePickerStyle(.compact)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Продолжительность: \(duration.formatted()) ч")
+                            .font(.headline)
+                        
+                        HStack {
+                            Image(systemName: "hourglass")
+                                .foregroundColor(.secondary)
+                            
+                            Slider(value: $duration, in: 0.5...8, step: 0.5)
+                            
+                            Image(systemName: "hourglass.tophalf.filled")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            ForEach([0.5, 1.0, 2.0, 4.0], id: \.self) { hours in
+                                Button("\(hours.formatted())ч") {
+                                    withAnimation(.spring()) {
+                                        duration = hours
+                                    }
+                                }
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(duration == hours ? Color.blue : Color.gray.opacity(0.2))
+                                .foregroundColor(duration == hours ? .white : .primary)
+                                .cornerRadius(6)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("Время")
+                }
                 
-                Stepper(
-                    "Продолжительность: \(Int(duration)) ч",
-                    value: $duration,
-                    in: 0.5...8,
-                    step: 0.5
-                )
-                
-                TextField("Описание (необязательно)", text: $description)
+                Section {
+                    TextField("Описание (необязательно)", text: $description, axis: .vertical)
+                        .focused($focusedField, equals: .description)
+                        .lineLimit(3...6)
+                } header: {
+                    Text("Детали")
+                }
             }
             .navigationTitle("Новое событие")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") {
+                    Button("Отмена", role: .cancel) {
                         isPresented = false
-                        onCancel()
                     }
                 }
+                
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Добавить") {
-                        onAdd()
+                    Button("Добавить", action: onAdd)
+                        .disabled(title.isEmpty)
+                        .fontWeight(.semibold)
+                }
+                
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Готово") {
+                        focusedField = nil
                     }
-                    .disabled(title.isEmpty)
                 }
             }
+            .onAppear {
+                focusedField = .title
+            }
         }
-        #if os(macOS)
-        .frame(width: 400, height: 300)
-        #endif
+        .interactiveDismissDisabled(!title.isEmpty)
     }
 }

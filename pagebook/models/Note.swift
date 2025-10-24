@@ -12,12 +12,14 @@ struct Note: Identifiable, Codable {
     var title: String
     var content: String
     let createdAt: Date
+    var updatedAt: Date
     
-    init(id: UUID = UUID(), title: String = "", content: String = "", createdAt: Date = Date()) {
+    init(id: UUID = UUID(), title: String = "", content: String = "", createdAt: Date = Date(), updatedAt: Date = Date()) {
         self.id = id
         self.title = title
         self.content = content
         self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
     
     static var empty: Note {

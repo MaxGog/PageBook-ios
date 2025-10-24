@@ -10,12 +10,20 @@ struct CalendarDatePicker: View {
     @Binding var selectedDate: Date
     
     var body: some View {
-        DatePicker(
-            "Выберите дату",
-            selection: $selectedDate,
-            displayedComponents: .date
-        )
-        .datePickerStyle(.graphical)
-        .padding()
+        VStack(alignment: .leading, spacing: 8) {
+            Text(selectedDate, style: .date)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            DatePicker(
+                "Выберите дату",
+                selection: $selectedDate,
+                displayedComponents: .date
+            )
+            .datePickerStyle(.graphical)
+            .tint(.blue)
+        }
+        .padding(.vertical, 12)
     }
 }

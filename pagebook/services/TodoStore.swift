@@ -6,8 +6,8 @@
 //
 import SwiftUI
 
-class TodoStore: ObservableObject {
-    @Published var tasks: [TodoTask] = []
+class TaskStore: ObservableObject {
+    @Published var tasks: [TaskItem] = []
     
     init() {
         loadTasks()
@@ -21,7 +21,7 @@ class TodoStore: ObservableObject {
     
     func loadTasks() {
         if let data = UserDefaults.standard.data(forKey: "tasks"),
-           let decoded = try? JSONDecoder().decode([TodoTask].self, from: data) {
+           let decoded = try? JSONDecoder().decode([TaskItem].self, from: data) {
             tasks = decoded
         }
     }

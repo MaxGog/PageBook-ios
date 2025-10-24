@@ -7,7 +7,7 @@
 
 import UserNotifications
 
-func scheduleNotification(for task: TodoTask) {
+func scheduleNotification(for task: TaskItem) {
     guard let dueDate = task.dueDate else { return }
     
     let content = UNMutableNotificationContent()

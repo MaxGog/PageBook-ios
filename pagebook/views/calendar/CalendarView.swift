@@ -9,49 +9,56 @@ import SwiftUI
 struct CalendarView: View {
     @StateObject private var store = CalendarStore()
     @State private var selectedDate = Date()
-    @State private var showingAddEvent = false
+    @State private var isShowingAddEvent = false
     @State private var newEventTitle = ""
     @State private var newEventDescription = ""
     @State private var newEventDate = Date()
     @State private var newEventDuration = 1.0
     
+    private var eventsForSelectedDate: [CalendarEvent] {
+        store.events.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+                   .sorted { $0.date < $1.date }
+    }
+    
     var body: some View {
-        NavigationView {
-            VStack {
+        NavigationStack {
+            VStack(spacing: 0) {
                 CalendarDatePicker(selectedDate: $selectedDate)
+                    .padding(.horizontal)
                 
-                EventListView(
-                    events: eventsForSelectedDate,
-                    onDelete: deleteEvent
-                )
+                Divider()
+                
+                if eventsForSelectedDate.isEmpty {
+                    EmptyStateView(selectedDate: selectedDate)
+                } else {
+                    EventListView(
+                        events: eventsForSelectedDate,
+                        onDelete: deleteEvents
+                    )
+                }
             }
             .navigationTitle("Календарь")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    AddEventButton(
-                        showingAddEvent: $showingAddEvent,
-                        selectedDate: $selectedDate,
-                        newEventDate: $newEventDate
-                    )
+                    Button {
+                        newEventDate = selectedDate
+                        isShowingAddEvent = true
+                    } label: {
+                        Label("Добавить событие", systemImage: "plus.circle.fill")
+                    }
                 }
             }
-            .sheet(isPresented: $showingAddEvent) {
+            .sheet(isPresented: $isShowingAddEvent) {
                 AddEventView(
-                    isPresented: $showingAddEvent,
+                    isPresented: $isShowingAddEvent,
                     title: $newEventTitle,
                     description: $newEventDescription,
                     date: $newEventDate,
                     duration: $newEventDuration,
-                    onAdd: addNewEvent,
-                    onCancel: resetForm
+                    onAdd: addNewEvent
                 )
             }
         }
-    }
-    
-    private var eventsForSelectedDate: [CalendarEvent] {
-        store.events.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
-                   .sorted { $0.date < $1.date }
     }
     
     private func addNewEvent() {
@@ -64,11 +71,11 @@ struct CalendarView: View {
         )
         store.events.append(event)
         store.saveEvents()
-        showingAddEvent = false
+        isShowingAddEvent = false
         resetForm()
     }
     
-    private func deleteEvent(at offsets: IndexSet) {
+    private func deleteEvents(at offsets: IndexSet) {
         store.events.remove(atOffsets: offsets)
         store.saveEvents()
     }

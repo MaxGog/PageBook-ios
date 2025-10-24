@@ -7,46 +7,34 @@
 import SwiftUI
 
 struct NoteDetailView: View {
-    @Binding var note: Note
-    var onSave: () -> Void
-    var isNewNote: Bool = false
+    let note: Note
     @State private var isEditing = false
-    @State private var editedTitle = ""
-    @State private var editedContent = ""
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         Group {
-            if isNewNote || isEditing {
-                NoteEditView(
-                    title: $editedTitle,
-                    content: $editedContent,
-                    createdAt: note.createdAt,
-                    isNewNote: isNewNote
+            if isEditing {
+                NoteEditorView(
+                    note: note,
+                    mode: .edit,
+                    onSave: { _ in
+                        isEditing = false
+                    },
+                    onCancel: {
+                        isEditing = false
+                    }
                 )
             } else {
                 NotePreviewView(note: note)
             }
         }
         .toolbar {
-            NoteToolbar(
-                isNewNote: isNewNote,
-                isEditing: $isEditing,
-                editedTitle: editedTitle,
-                note: $note,
-                editedTitleBinding: $editedTitle,
-                editedContentBinding: $editedContent,
-                onSave: onSave,
-                dismiss: dismiss
-            )
-        }
-        .navigationTitle(isNewNote ? "Новая заметка" : (isEditing ? "Редактирование" : note.title))
-        .onAppear {
-            if isNewNote {
-                editedTitle = note.title
-                editedContent = note.content
-                isEditing = true
+            ToolbarItem(placement: .primaryAction) {
+                Button(isEditing ? "Готово" : "Редактировать") {
+                    isEditing.toggle()
+                }
             }
         }
+        .navigationTitle(isEditing ? "Редактирование" : note.title)
     }
 }

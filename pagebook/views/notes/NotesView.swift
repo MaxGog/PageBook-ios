@@ -9,22 +9,62 @@ import SwiftUI
 
 struct NotesView: View {
     @StateObject private var store = NotesStore()
-    @State private var showingNewNote = false
-    @State private var newNote = Note.empty
+    @State private var isShowingNewNote = false
+    @State private var searchText = ""
     
-    var body: some View {
-        NavigationView {
-            NotesListView(
-                notes: $store.notes,
-                showingNewNote: $showingNewNote,
-                newNote: $newNote,
-                onDelete: deleteNote,
-                onSave: store.saveNotes
-            )
+    private var filteredNotes: [Note] {
+        if searchText.isEmpty {
+            return store.notes
+        } else {
+            return store.notes.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText) ||
+                $0.content.localizedCaseInsensitiveContains(searchText)
+            }
         }
     }
     
-    private func deleteNote(at offsets: IndexSet) {
+    var body: some View {
+        NavigationStack {
+            Group {
+                if filteredNotes.isEmpty {
+                    EmptyNotesView(searchText: searchText)
+                } else {
+                    NotesListView(
+                        notes: filteredNotes,
+                        onDelete: deleteNotes
+                    )
+                }
+            }
+            .navigationTitle("Заметки")
+            .searchable(text: $searchText, prompt: "Поиск заметок...")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isShowingNewNote = true
+                    } label: {
+                        Label("Новая заметка", systemImage: "square.and.pencil")
+                    }
+                }
+            }
+            .sheet(isPresented: $isShowingNewNote) {
+                NavigationStack {
+                    NoteEditorView(
+                        mode: .create,
+                        onSave: { newNote in
+                            store.notes.append(newNote)
+                            store.saveNotes()
+                            isShowingNewNote = false
+                        },
+                        onCancel: {
+                            isShowingNewNote = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+    
+    private func deleteNotes(at offsets: IndexSet) {
         store.notes.remove(atOffsets: offsets)
         store.saveNotes()
     }
