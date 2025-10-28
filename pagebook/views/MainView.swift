@@ -11,9 +11,11 @@ struct MainView: View {
         case notes
         case tasks
         case calendar
+        case settings
     }
     
     @State private var selectedTab: Tab = .notes
+    @EnvironmentObject var settings: Settings
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -34,6 +36,27 @@ struct MainView: View {
                     Label("Календарь", systemImage: "calendar")
                 }
                 .tag(Tab.calendar)
+            
+            SettingsView()
+                .tabItem {
+                    Label("Настройки", systemImage: "gear")
+                }
+                .tag(Tab.settings)
+        }
+        .accentColor(settings.accentColorValue)
+        .onAppear {
+            applyTheme()
+        }
+        .onChange(of: settings.isDarkMode) { _ in
+            applyTheme()
         }
     }
+}
+
+private func applyTheme() {
+    #if os(iOS)
+    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+        windowScene.windows.first?.overrideUserInterfaceStyle = settings.isDarkMode ? .dark : .light
+    }
+    #endif
 }

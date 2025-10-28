@@ -10,13 +10,14 @@ import SwiftData
 
 @main
 struct pagebookApp: App {
+    @StateObject private var settings = Settings()
+    
     var body: some Scene {
         WindowGroup {
             MainView()
+                .environmentObject(settings)
+                .preferredColorScheme(settings.isDarkMode ? .dark : .none)
+                .accentColor(settings.accentColorValue)
         }
-        #if os(macOS)
-        .windowStyle(.titleBar)
-        .windowToolbarStyle(.unified)
-        #endif
     }
 }
